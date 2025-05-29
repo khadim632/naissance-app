@@ -1,9 +1,9 @@
 // User related types
 export enum UserRole {
-  HOSPITAL = 'hospital',
-  MUNICIPALITY = 'municipality',
-  ADMIN = 'admin',
-  SUPERADMIN = 'superadmin'
+  hopital = 'hopital',
+  mairie = 'mairie',
+  admin = 'admin',        // Changé de ADMIN à admin pour la cohérence
+  superadmin = 'superadmin' // Changé de SUPERADMIN à superadmin pour la cohérence
 }
 
 export interface User {
@@ -27,9 +27,9 @@ export interface AuthState {
 
 // Declaration statuses
 export enum DeclarationStatus {
-  PENDING = 'pending',
-  VALIDATED = 'validated',
-  REJECTED = 'rejected'
+  en_attente = 'en attente',
+  validée = 'validée',
+  rejetée = 'rejetée'
 }
 
 // Birth declaration types

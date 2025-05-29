@@ -15,3 +15,4 @@ export const statsService = {
   getHospitalDetailedStats: () =>
     api.get<ApiResponse<Record<string, DashboardStats>>>(API_ENDPOINTS.HOSPITAL_DETAILED_STATS)
 };
+

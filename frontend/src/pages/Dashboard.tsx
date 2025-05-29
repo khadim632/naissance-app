@@ -69,7 +69,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {user?.role === UserRole.HOSPITAL && (
+        {user?.role === UserRole.hopital && (
           <>
             <StatsCard
               title="Total Birth Declarations"
@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
           </>
         )}
 
-        {user?.role === UserRole.MUNICIPALITY && (
+        {user?.role === UserRole.mairie && (
           <>
             <StatsCard
               title="Pending Birth Validations"
@@ -135,7 +135,40 @@ const Dashboard: React.FC = () => {
           </>
         )}
 
-        {user?.role === UserRole.ADMIN && (
+        {user?.role === UserRole.admin && (
+          <>
+            <StatsCard
+              title="Total Hospitals"
+              value={12}
+              icon={<HeartPulse size={24} />}
+              textColor="text-purple-600"
+            />
+            <StatsCard
+              title="Total Municipalities"
+              value={28}
+              icon={<Users size={24} />}
+              textColor="text-indigo-600"
+            />
+            <StatsCard
+              title="Total Birth Declarations"
+              value={stats.totalBirthDeclarations}
+              icon={<Baby size={24} />}
+              change={12}
+              changeType="increase"
+              textColor="text-blue-600"
+            />
+            <StatsCard
+              title="Total Death Declarations"
+              value={stats.totalDeathDeclarations}
+              icon={<BarChart3 size={24} />}
+              change={3}
+              changeType="increase"
+              textColor="text-gray-600"
+            />
+          </>
+        )}
+
+        {user?.role === UserRole.superadmin && (
           <>
             <StatsCard
               title="Total Hospitals"

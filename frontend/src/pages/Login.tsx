@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { AxiosError } from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,9 +13,8 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [formError, setFormError] = useState('');
-  const { login, authState } = useAuth();
+  const { login, authState, getRedirectPath } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,9 +26,14 @@ const Login: React.FC = () => {
     }
     
     try {
-      await login(email, motDePasse);
-      const from = location.state?.from?.pathname || '/app/dashboard';
-      navigate(from, { replace: true });
+      // La fonction login retourne maintenant les données utilisateur directement
+      const user = await login(email, motDePasse);
+      
+      // Utiliser directement les données utilisateur retournées par login
+      // au lieu d'attendre la mise à jour de l'état du contexte
+      const redirectPath = getRedirectPath(user.role);
+      navigate(redirectPath, { replace: true });
+
     } catch (error) {
       const axiosError = error as AxiosError<ApiErrorResponse>;
       const errorMessage = axiosError.response?.data?.message || 'Email ou mot de passe invalide';

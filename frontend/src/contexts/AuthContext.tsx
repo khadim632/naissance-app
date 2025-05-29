@@ -12,14 +12,31 @@ interface AuthState {
 
 interface AuthContextType {
   authState: AuthState;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  getRedirectPath: (role: UserRole) => string;
 }
 
 interface ApiErrorResponse {
   message?: string;
 }
+
+// Fonction utilitaire pour déterminer la redirection selon le rôle
+const getRedirectPath = (role: UserRole): string => {
+  switch (role) {
+    case UserRole.hopital:
+      return '/app/births';
+    case UserRole.mairie:
+      return '/app/validations';
+    case UserRole.admin:
+      return '/app/users';
+    case UserRole.superadmin:
+      return '/app/users';
+    default:
+      return '/app/dashboard';
+  }
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -61,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
       
@@ -87,6 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }));
       
       toast.success('Connexion réussie!');
+      return user; // Retourner l'utilisateur pour permettre la redirection immédiate
     } catch (err) {
       const axiosError = err as AxiosError<ApiErrorResponse>;
       const errorMessage = axiosError.response?.data?.message || 'Erreur de connexion';
@@ -119,7 +137,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     authState,
     login,
     logout,
-    isAuthenticated: !!authState.user
+    isAuthenticated: !!authState.user,
+    getRedirectPath
   };
 
   return (
@@ -129,6 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

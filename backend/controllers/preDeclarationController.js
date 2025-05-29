@@ -301,6 +301,7 @@ exports.getStatistiquesParHopital = async (req, res) => {
   }
 };
 
+// Corriger la fonction getStatistiquesGlobales
 exports.getStatistiquesGlobales = async (req, res) => {
   try {
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
@@ -315,13 +316,91 @@ exports.getStatistiquesGlobales = async (req, res) => {
     res.json({
       totalNaissances: nbNaissances,
       totalDeces: nbDeces,
-      total:totalNaissances +  totalDeces,
+      total: nbNaissances + nbDeces, // Correction: utiliser les bonnes variables
     });
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 };
 
+// Corriger la fonction getStatistiquesMairie pour être cohérente
+exports.getStatistiquesMairie = async (req, res) => {
+  try {
+    if (req.user.role !== 'mairie') {
+      return res.status(403).json({ message: "Accès réservé aux mairies." });
+    }
+
+    const mongoose = require('mongoose'); // Ajouter cet import si pas déjà fait
+
+    const stats = await PreDeclarationNaissance.aggregate([
+      { $match: { mairieDestinataire: mongoose.Types.ObjectId(req.user._id) } },
+      { $group: {
+          _id: "$statutValidation",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Transformer le résultat en format plus lisible
+    const statistiques = {
+      total: 0,
+      enAttente: 0,
+      validees: 0,
+      refusees: 0
+    };
+
+    stats.forEach(stat => {
+      if (stat._id === 'en attente') statistiques.enAttente = stat.count;
+      else if (stat._id === 'validée') statistiques.validees = stat.count;
+      else if (stat._id === 'refusée') statistiques.refusees = stat.count;
+      statistiques.total += stat.count;
+    });
+
+    res.json({
+      mairie: req.user.nom || req.user.email,
+      statistiques
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+// Ajouter une nouvelle fonction pour les statistiques de validation globales (optionnel)
+exports.getStatistiquesValidationGlobales = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ message: "Accès refusé." });
+    }
+
+    const stats = await PreDeclarationNaissance.aggregate([
+      { $group: {
+          _id: "$statutValidation",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const statistiques = {
+      total: 0,
+      enAttente: 0,
+      validees: 0,
+      refusees: 0
+    };
+
+    stats.forEach(stat => {
+      if (stat._id === 'en attente' || !stat._id) statistiques.enAttente = stat.count;
+      else if (stat._id === 'validée') statistiques.validees = stat.count;
+      else if (stat._id === 'refusée') statistiques.refusees = stat.count;
+      statistiques.total += stat.count;
+    });
+
+    res.json(statistiques);
+
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
 exports.getStatistiquesParHopitalPourAdmin = async (req, res) => {
   try {
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {

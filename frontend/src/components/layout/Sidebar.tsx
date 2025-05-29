@@ -1,3 +1,4 @@
+// Dans Sidebar.tsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -44,7 +45,7 @@ const Sidebar: React.FC = () => {
             <span>Dashboard</span>
           </Link>
 
-          {user.role === UserRole.HOSPITAL && (
+          {user.role === UserRole.hopital && (
             <>
               <Link 
                 to="/births" 
@@ -72,7 +73,7 @@ const Sidebar: React.FC = () => {
             </>
           )}
 
-          {user.role === UserRole.MUNICIPALITY && (
+          {user.role === UserRole.mairie && (
             <Link 
               to="/validations" 
               className={`flex items-center px-3 py-2 text-sm rounded-md group ${
@@ -86,32 +87,31 @@ const Sidebar: React.FC = () => {
             </Link>
           )}
 
-          {user.role === UserRole.ADMIN && (
-            <>
-              <Link 
-                to="/users" 
-                className={`flex items-center px-3 py-2 text-sm rounded-md group ${
-                  isActiveRoute('/users') 
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+          {/* Lien vers les statistiques pour tous les rôles */}
+          <Link 
+            to="/statistics" 
+            className={`flex items-center px-3 py-2 text-sm rounded-md group ${
+              isActiveRoute('/statistics') 
+                ? 'bg-blue-50 text-blue-700' 
+                : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+            }`}
+          >
+            <BarChart4 className="mr-3 h-5 w-5 flex-shrink-0" />
+            <span>Statistics</span>
+          </Link>
+
+          {user.role === UserRole.admin && (
+            <Link 
+              to="/users" 
+              className={`flex items-center px-3 py-2 text-sm rounded-md group ${
+                isActiveRoute('/users') 
+                  ? 'bg-blue-50 text-blue-700' 
+                  : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
                 }`}
               >
                 <Users className="mr-3 h-5 w-5 flex-shrink-0" />
                 <span>User Management</span>
               </Link>
-
-              <Link 
-                to="/statistics" 
-                className={`flex items-center px-3 py-2 text-sm rounded-md group ${
-                  isActiveRoute('/statistics') 
-                    ? 'bg-blue-50 text-blue-700' 
-                    : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                }`}
-              >
-                <BarChart4 className="mr-3 h-5 w-5 flex-shrink-0" />
-                <span>System Statistics</span>
-              </Link>
-            </>
           )}
         </nav>
       </div>

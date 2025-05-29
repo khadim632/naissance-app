@@ -7,10 +7,16 @@ const { isBlacklisted } = require("../utils/tokenBlacklist");
 
 exports.register = async (req, res) => {
   const { nom, email, motDePasse, role } = req.body;
+  const currentUser = req.user;
 
   const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
   if (!regex.test(motDePasse)) {
     return res.status(400).json({ message: "Mot de passe trop faible" });
+  }
+
+  // Les admins ne peuvent créer que des comptes hôpital et mairie
+  if (currentUser.role === 'admin' && !['hopital', 'mairie'].includes(role)) {
+    return res.status(403).json({ message: "Vous ne pouvez créer que des comptes hôpital et mairie" });
   }
 
   try {
@@ -48,10 +54,27 @@ exports.login = async (req, res) => {
 };
 
 exports.getUsers = async (req, res) => {
-  const users = await User.find();
-  res.json(users);
-};
+  try {
+    const currentUser = req.user;
+    let users;
 
+    if (currentUser.role === 'superadmin') {
+      // Le superadmin voit tous les utilisateurs
+      users = await User.find().select('-motDePasse -refreshToken -resetToken -resetTokenExpire');
+    } else if (currentUser.role === 'admin') {
+      // L'admin ne voit que les hôpitaux et mairies
+      users = await User.find({ 
+        role: { $in: ['hopital', 'mairie'] } 
+      }).select('-motDePasse -refreshToken -resetToken -resetTokenExpire');
+    } else {
+      return res.status(403).json({ message: "Accès refusé" });
+    }
+
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
