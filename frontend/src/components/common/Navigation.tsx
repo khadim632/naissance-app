@@ -10,7 +10,6 @@ import {
   PlusCircle
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserRole } from '../../types';
 
 const Navigation: React.FC = () => {
   const { authState } = useAuth();
@@ -23,6 +22,7 @@ const Navigation: React.FC = () => {
         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
     }`;
 
+  // Navigation items avec préfixe /app pour tous les liens
   const navigationItems = [
     // Dashboard - accessible à tous
     {

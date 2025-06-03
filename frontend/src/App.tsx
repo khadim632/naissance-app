@@ -12,7 +12,7 @@ import BirthForm from './pages/births/BirthForm';
 import ValidationsList from './pages/validations/ValidationsList';
 import RequireRole from './components/auth/RequireRole';
 import UsersList from './pages/UsersList';
-
+import Statistics from './pages/Statistics';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -25,7 +25,7 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-// Composant pour rediriger automatiquement selon le rôle
+// Composant pour rediriger automatiquement selon le rôle SEULEMENT pour la route racine /app
 const RoleBasedRedirect: React.FC = () => {
   const { authState, getRedirectPath } = useAuth();
   
@@ -54,11 +54,21 @@ function App() {
             </RequireAuth>
           }
         >
-          {/* Redirection automatique basée sur le rôle */}
+          {/* Redirection automatique basée sur le rôle SEULEMENT pour /app */}
           <Route index element={<RoleBasedRedirect />} />
           
           {/* Route dashboard accessible à tous les utilisateurs connectés */}
           <Route path="dashboard" element={<Dashboard />} /> 
+          
+          {/* Route statistiques accessible à tous les utilisateurs connectés */}
+          <Route 
+            path="statistics" 
+            element={
+              <RequireRole allowedRoles={['admin', 'superadmin', 'hopital', 'mairie']}>
+                <Statistics />
+              </RequireRole>
+            } 
+          />
           
           {/* 🏥 Routes réservées aux hôpitaux */}
           <Route 
@@ -128,14 +138,6 @@ function App() {
             element={
               <RequireRole allowedRoles={['admin', 'superadmin']}>
                 <UsersList /> 
-              </RequireRole>
-            } 
-          />
-          <Route 
-            path="statistics" 
-            element={
-              <RequireRole allowedRoles={['admin', 'superadmin']}>
-                <div>System Statistics (To be implemented)</div>
               </RequireRole>
             } 
           />

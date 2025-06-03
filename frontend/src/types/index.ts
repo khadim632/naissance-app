@@ -2,8 +2,8 @@
 export enum UserRole {
   hopital = 'hopital',
   mairie = 'mairie',
-  admin = 'admin',        // Changé de ADMIN à admin pour la cohérence
-  superadmin = 'superadmin' // Changé de SUPERADMIN à superadmin pour la cohérence
+  admin = 'admin',
+  superadmin = 'superadmin'
 }
 
 export interface User {
@@ -29,7 +29,7 @@ export interface AuthState {
 export enum DeclarationStatus {
   en_attente = 'en attente',
   validée = 'validée',
-  rejetée = 'rejetée'
+  refusée = 'refusée'
 }
 
 // Birth declaration types
@@ -39,6 +39,7 @@ export interface Parent {
   idNumber: string;
   phoneNumber: string;
   address: string;
+  email?: string;
 }
 
 export interface BirthDeclaration {
@@ -91,7 +92,44 @@ export interface DeathDeclaration {
   updatedAt: string;
 }
 
-// Statistics types
+// ✅ NOUVELLES INTERFACES CORRESPONDANT AU BACKEND
+export interface HospitalStats {
+  hopital: string;
+  nbNaissances: number;
+  nbDeces: number;
+  total: number;
+}
+
+export interface MunicipalityStats {
+  mairie: string;
+  statistiques: {
+    total: number;
+    enAttente: number;
+    validees: number;
+    refusees: number;
+  };
+}
+
+export interface GlobalStats {
+  totalNaissances: number;
+  totalDeces: number;
+  total: number;
+}
+
+export interface ValidationGlobalStats {
+  total: number;
+  enAttente: number;
+  validees: number;
+  refusees: number;
+}
+
+export interface AdminHospitalStats {
+  hopital: string;
+  totalNaissances: number;
+  totalDeces: number;
+}
+
+// Statistics types (conservées pour compatibilité)
 export interface DashboardStats {
   totalBirthDeclarations: number;
   totalDeathDeclarations: number;
@@ -105,8 +143,8 @@ export interface DashboardStats {
 
 // API Response types
 export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
+  success?: boolean;
+  data?: T;
   message?: string;
 }
 

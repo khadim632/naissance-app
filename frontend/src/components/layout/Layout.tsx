@@ -52,40 +52,41 @@ const Layout: React.FC = () => {
     }
   ];
 
+  // CORRECTION : Ajout du préfixe /app pour tous les liens
   const navigationItems = [
     {
       name: 'Dashboard',
-      href: '/dashboard',
+      href: '/app/dashboard', // Corrigé : ajout de /app
       icon: Home,
       roles: [UserRole.hopital, UserRole.mairie, UserRole.admin, UserRole.superadmin]
     },
     {
       name: 'Statistiques',
-      href: '/statistics',
+      href: '/app/statistics', // Corrigé : ajout de /app
       icon: BarChart3,
       roles: [UserRole.hopital, UserRole.mairie, UserRole.admin, UserRole.superadmin]
     },
     {
       name: 'Déclarations de naissance',
-      href: '/births',
+      href: '/app/births', // Corrigé : ajout de /app
       icon: Baby,
       roles: [UserRole.hopital]
     },
     {
       name: 'Déclarations de décès',
-      href: '/deaths',
+      href: '/app/deaths', // Corrigé : ajout de /app
       icon: HeartPulse,
       roles: [UserRole.hopital]
     },
     {
       name: 'Validations',
-      href: '/validations',
+      href: '/app/validations', // Corrigé : ajout de /app
       icon: CheckSquare,
       roles: [UserRole.mairie]
     },
     {
       name: 'Gestion des utilisateurs',
-      href: '/users',
+      href: '/app/users', // Corrigé : ajout de /app
       icon: Users,
       roles: [UserRole.admin, UserRole.superadmin]
     }
@@ -106,12 +107,13 @@ const Layout: React.FC = () => {
       <nav className="flex-1 px-4 py-6 space-y-2">
         {visibleItems.map((item) => {
           const Icon = item.icon;
+          const isActiveLink = isActive(item.href);
           return (
             <Link
               key={item.name}
               to={item.href}
               className={`flex items-center px-4 py-3 text-sm rounded-lg transition-colors ${
-                isActive(item.href)
+                isActiveLink
                   ? 'bg-blue-700 text-white'
                   : 'text-blue-100 hover:bg-blue-700 hover:text-white'
               }`}

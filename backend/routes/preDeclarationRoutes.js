@@ -73,4 +73,12 @@ router.get(
     controller.getStatistiquesMairie
 );
 
+router.get(
+    '/stats/validation-globales',
+    protect,
+    authorizeRoles('admin', 'superadmin'),
+    controller.getStatistiquesValidationGlobales
+);
+
+
 module.exports = router;

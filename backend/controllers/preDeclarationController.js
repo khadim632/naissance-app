@@ -580,16 +580,61 @@ exports.validerPreDeclarationNaissance = async (req, res) => {
   }
 };
 
-// Obtenir les statistiques des validations pour une mairie
+// Ajoutez cette fonction à votre preDeclarationController.js existant
+
+// ✅ Nouvelle fonction pour les statistiques de validation globales (pour compléter l'API)
+exports.getStatistiquesValidationGlobales = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ message: "Accès refusé." });
+    }
+
+    const stats = await PreDeclarationNaissance.aggregate([
+      { $group: {
+          _id: "$statutValidation",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const statistiques = {
+      total: 0,
+      enAttente: 0,
+      validees: 0,
+      refusees: 0
+    };
+
+    stats.forEach(stat => {
+      if (stat._id === 'en attente' || !stat._id) statistiques.enAttente = stat.count;
+      else if (stat._id === 'validée') statistiques.validees = stat.count;
+      else if (stat._id === 'refusée') statistiques.refusees = stat.count;
+      statistiques.total += stat.count;
+    });
+
+    res.json(statistiques);
+
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+// ✅ Amélioration de la fonction getStatistiquesMairie pour être plus robuste
 exports.getStatistiquesMairie = async (req, res) => {
   try {
     if (req.user.role !== 'mairie') {
       return res.status(403).json({ message: "Accès réservé aux mairies." });
     }
 
+    const mongoose = require('mongoose');
+
     const stats = await PreDeclarationNaissance.aggregate([
-      { $match: { mairieDestinataire: mongoose.Types.ObjectId(req.user._id) } },
-      { $group: {
+      { 
+        $match: { 
+          mairieDestinataire: new mongoose.Types.ObjectId(req.user._id)
+        } 
+      },
+      { 
+        $group: {
           _id: "$statutValidation",
           count: { $sum: 1 }
         }
@@ -605,9 +650,13 @@ exports.getStatistiquesMairie = async (req, res) => {
     };
 
     stats.forEach(stat => {
-      if (stat._id === 'en attente') statistiques.enAttente = stat.count;
-      else if (stat._id === 'validée') statistiques.validees = stat.count;
-      else if (stat._id === 'refusée') statistiques.refusees = stat.count;
+      if (stat._id === 'en attente' || !stat._id) {
+        statistiques.enAttente = stat.count;
+      } else if (stat._id === 'validée') {
+        statistiques.validees = stat.count;
+      } else if (stat._id === 'refusée') {
+        statistiques.refusees = stat.count;
+      }
       statistiques.total += stat.count;
     });
 

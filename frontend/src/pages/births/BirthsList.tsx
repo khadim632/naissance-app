@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, Download } from 'lucide-react';
+import { Plus, Search, Download } from 'lucide-react';
 import { BirthDeclaration, DeclarationStatus } from '../../types';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
 
 // Mock data for development
 const mockBirthDeclarations: BirthDeclaration[] = Array.from({ length: 20 }, (_, i) => ({
-  id: `BD${1000 + i}`,
+  _id: `BD${1000 + i}`,
   childFirstName: `Prénom${i}`,
   childLastName: `Nom${i}`,
   birthDate: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
@@ -29,11 +29,13 @@ const mockBirthDeclarations: BirthDeclaration[] = Array.from({ length: 20 }, (_,
     address: 'Dakar, Sénégal'
   },
   declarationDate: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
-  status: [DeclarationStatus.PENDING, DeclarationStatus.VALIDATED, DeclarationStatus.REJECTED][Math.floor(Math.random() * 3)],
+  status: [DeclarationStatus.en_attente, DeclarationStatus.validée, DeclarationStatus.rejetée][Math.floor(Math.random() * 3)],
   hospitalId: '1',
   hospitalName: 'Hôpital Principal de Dakar',
   municipalityId: '1',
-  municipalityName: 'Mairie de Dakar'
+  municipalityName: 'Mairie de Dakar',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
 }));
 
 const BirthsList: React.FC = () => {
@@ -60,7 +62,7 @@ const BirthsList: React.FC = () => {
     const matchesSearch = 
       declaration.childFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       declaration.childLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      declaration.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      declaration._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       declaration.municipalityName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || declaration.status === statusFilter;
@@ -85,13 +87,13 @@ const BirthsList: React.FC = () => {
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Birth Declarations</h1>
-          <p className="text-gray-600">Manage and track all birth declarations</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Déclarations de Naissance</h1>
+          <p className="text-gray-600">Gérer et suivre toutes les déclarations de naissance</p>
         </div>
         <div className="mt-4 md:mt-0">
           <Link to="/births/new">
             <Button variant="primary" icon={<Plus size={16} />}>
-              New Declaration
+              Nouvelle Déclaration
             </Button>
           </Link>
         </div>
@@ -106,7 +108,7 @@ const BirthsList: React.FC = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search by name, ID, or municipality..."
+                placeholder="Rechercher par nom, ID, ou municipalité..."
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -118,17 +120,17 @@ const BirthsList: React.FC = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as DeclarationStatus | 'all')}
               >
-                <option value="all">All Statuses</option>
-                <option value={DeclarationStatus.PENDING}>Pending</option>
-                <option value={DeclarationStatus.VALIDATED}>Validated</option>
-                <option value={DeclarationStatus.REJECTED}>Rejected</option>
+                <option value="all">Tous les statuts</option>
+                <option value={DeclarationStatus.en_attente}>En attente</option>
+                <option value={DeclarationStatus.validée}>Validée</option>
+                <option value={DeclarationStatus.rejetée}>Rejetée</option>
               </select>
               <Button 
                 variant="outline" 
                 icon={<Download size={16} />}
                 onClick={handleExport}
               >
-                Export
+                Exporter
               </Button>
             </div>
           </div>
@@ -142,19 +144,19 @@ const BirthsList: React.FC = () => {
                   ID
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Child Name
+                  Nom de l'enfant
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Birth Date
+                  Date de naissance
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Municipality
+                  Municipalité
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Statut
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Declaration Date
+                  Date de déclaration
                 </th>
                 <th scope="col" className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
@@ -163,9 +165,9 @@ const BirthsList: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDeclarations.map((declaration) => (
-                <tr key={declaration.id} className="hover:bg-gray-50">
+                <tr key={declaration._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {declaration.id}
+                    {declaration._id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {declaration.childFirstName} {declaration.childLastName}
@@ -184,10 +186,10 @@ const BirthsList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link 
-                      to={`/births/${declaration.id}`}
+                      to={`/births/${declaration._id}`}
                       className="text-blue-600 hover:text-blue-900"
                     >
-                      View
+                      Voir
                     </Link>
                   </td>
                 </tr>
@@ -197,7 +199,7 @@ const BirthsList: React.FC = () => {
           
           {filteredDeclarations.length === 0 && (
             <div className="px-6 py-12 text-center">
-              <p className="text-gray-500 text-sm">No birth declarations found matching your criteria.</p>
+              <p className="text-gray-500 text-sm">Aucune déclaration de naissance trouvée correspondant à vos critères.</p>
             </div>
           )}
         </div>
