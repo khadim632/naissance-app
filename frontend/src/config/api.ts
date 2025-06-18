@@ -18,19 +18,20 @@ export const API_ENDPOINTS = {
   DEATH_DECLARATION: (id: string) => `/predeclarations/deces/${id}`,
   DEATH_VALIDATION: (id: string) => `/predeclarations/deces/${id}/validation`,
 
-  // Statistics endpoints - CORRIGÉ : suppression du /api en double
+  // Statistics endpoints
   HOSPITAL_STATS: '/predeclarations/stats/hopital',
   MUNICIPALITY_STATS: '/predeclarations/stats/mairie', 
   GLOBAL_STATS: '/predeclarations/stats/globales',
   HOSPITAL_DETAILED_STATS: '/predeclarations/stats/par-hopital',
   VALIDATION_GLOBAL_STATS: '/predeclarations/stats/validation-globales',
   
-  // Pre-declarations endpoints - CORRIGÉ : suppression du /api en double
+  // Pre-declarations endpoints
   PRE_DECLARATIONS_BIRTHS: '/predeclarations/naissance',
   PRE_DECLARATIONS_DEATHS: '/predeclarations/deces',
   PRE_DECLARATIONS_ALL: '/predeclarations/mes-predeclarations',
+  // CORRIGÉ: URL correcte pour les déclarations destinées à une mairie
   PRE_DECLARATIONS_FOR_MUNICIPALITY: '/predeclarations/predeclarations/mairie',
   
-  // Validation endpoints - CORRIGÉ : suppression du /api en double
+  // Validation endpoints
   VALIDATE_BIRTH_DECLARATION: (id: string) => `/predeclarations/naissance/${id}/validation`,
 };

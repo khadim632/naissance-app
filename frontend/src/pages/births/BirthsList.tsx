@@ -4,39 +4,7 @@ import { Plus, Search, Download } from 'lucide-react';
 import { BirthDeclaration, DeclarationStatus } from '../../types';
 import StatusBadge from '../../components/common/StatusBadge';
 import Button from '../../components/common/Button';
-
-// Mock data for development
-const mockBirthDeclarations: BirthDeclaration[] = Array.from({ length: 20 }, (_, i) => ({
-  _id: `BD${1000 + i}`,
-  childFirstName: `Prénom${i}`,
-  childLastName: `Nom${i}`,
-  birthDate: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString().split('T')[0],
-  birthTime: `${Math.floor(Math.random() * 24)}:${Math.floor(Math.random() * 60)}`,
-  birthPlace: 'Hôpital Principal de Dakar',
-  gender: Math.random() > 0.5 ? 'male' : 'female',
-  father: {
-    firstName: `PèrePrénom${i}`,
-    lastName: `PèreNom${i}`,
-    idNumber: `ID${100000 + i}`,
-    phoneNumber: `+221 7${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 1000)} ${Math.floor(Math.random() * 10000)}`,
-    address: 'Dakar, Sénégal'
-  },
-  mother: {
-    firstName: `MèrePrénom${i}`,
-    lastName: `MèreNom${i}`,
-    idNumber: `ID${200000 + i}`,
-    phoneNumber: `+221 7${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 1000)} ${Math.floor(Math.random() * 10000)}`,
-    address: 'Dakar, Sénégal'
-  },
-  declarationDate: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
-  status: [DeclarationStatus.en_attente, DeclarationStatus.validée, DeclarationStatus.rejetée][Math.floor(Math.random() * 3)],
-  hospitalId: '1',
-  hospitalName: 'Hôpital Principal de Dakar',
-  municipalityId: '1',
-  municipalityName: 'Mairie de Dakar',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-}));
+import { birthService } from '../../services/birthService';
 
 const BirthsList: React.FC = () => {
   const [birthDeclarations, setBirthDeclarations] = useState<BirthDeclaration[]>([]);
@@ -45,33 +13,34 @@ const BirthsList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<DeclarationStatus | 'all'>('all');
 
   useEffect(() => {
-    // Simulate API call
-    const fetchBirthDeclarations = () => {
+    const fetchBirthDeclarations = async () => {
       setIsLoading(true);
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setBirthDeclarations(mockBirthDeclarations);
+      try {
+        const response = await birthService.getAll();
+        setBirthDeclarations(response.data?.data || []);
+      } catch (error) {
+        console.error('Error fetching birth declarations:', error);
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
     };
 
     fetchBirthDeclarations();
   }, []);
 
-  const filteredDeclarations = birthDeclarations.filter(declaration => {
-    const matchesSearch = 
-      declaration.childFirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      declaration.childLastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredDeclarations = birthDeclarations.filter((declaration) => {
+    const matchesSearch =
+      declaration.prenomBebe.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      declaration.nomBebe.toLowerCase().includes(searchTerm.toLowerCase()) ||
       declaration._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      declaration.municipalityName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || declaration.status === statusFilter;
-    
+      declaration.mairieDestinataire.nom.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === 'all' || declaration.statutValidation === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   const handleExport = () => {
-    // In a real app, this would trigger an API call to generate a CSV/PDF
     alert('Export functionality will be implemented with backend integration');
   };
 
@@ -91,7 +60,8 @@ const BirthsList: React.FC = () => {
           <p className="text-gray-600">Gérer et suivre toutes les déclarations de naissance</p>
         </div>
         <div className="mt-4 md:mt-0">
-          <Link to="/births/new">
+          {/* CORRECTION: Changement du lien de /births/new vers /app/births/new */}
+          <Link to="/app/births/new">
             <Button variant="primary" icon={<Plus size={16} />}>
               Nouvelle Déclaration
             </Button>
@@ -123,39 +93,53 @@ const BirthsList: React.FC = () => {
                 <option value="all">Tous les statuts</option>
                 <option value={DeclarationStatus.en_attente}>En attente</option>
                 <option value={DeclarationStatus.validée}>Validée</option>
-                <option value={DeclarationStatus.rejetée}>Rejetée</option>
+                <option value={DeclarationStatus.refusée}>Rejetée</option>
               </select>
-              <Button 
-                variant="outline" 
-                icon={<Download size={16} />}
-                onClick={handleExport}
-              >
+              <Button variant="outline" icon={<Download size={16} />} onClick={handleExport}>
                 Exporter
               </Button>
             </div>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   ID
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Nom de l'enfant
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Date de naissance
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Municipalité
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Statut
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Date de déclaration
                 </th>
                 <th scope="col" className="relative px-6 py-3">
@@ -170,25 +154,23 @@ const BirthsList: React.FC = () => {
                     {declaration._id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {declaration.childFirstName} {declaration.childLastName}
+                    {declaration.prenomBebe} {declaration.nomBebe}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {declaration.birthDate}
+                    {new Date(declaration.dateNaissance).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {declaration.municipalityName}
+                    {declaration.mairieDestinataire.nom}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={declaration.status} />
+                    <StatusBadge status={declaration.statutValidation} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(declaration.declarationDate).toLocaleDateString()}
+                    {new Date(declaration.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link 
-                      to={`/births/${declaration._id}`}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
+                    {/* CORRECTION: Changement du lien de /births/${declaration._id} vers /app/births/${declaration._id} */}
+                    <Link to={`/app/births/${declaration._id}`} className="text-blue-600 hover:text-blue-900">
                       Voir
                     </Link>
                   </td>
@@ -196,10 +178,12 @@ const BirthsList: React.FC = () => {
               ))}
             </tbody>
           </table>
-          
+
           {filteredDeclarations.length === 0 && (
             <div className="px-6 py-12 text-center">
-              <p className="text-gray-500 text-sm">Aucune déclaration de naissance trouvée correspondant à vos critères.</p>
+              <p className="text-gray-500 text-sm">
+                Aucune déclaration de naissance trouvée correspondant à vos critères.
+              </p>
             </div>
           )}
         </div>

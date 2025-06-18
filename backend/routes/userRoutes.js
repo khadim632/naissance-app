@@ -12,7 +12,7 @@ router.post("/login", login);
 // Route unique pour récupérer les utilisateurs - combinée admin et superadmin
 router.get("/", protect, (req, res, next) => {
   // Vérifier si l'utilisateur est admin ou superadmin
-  if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+  if (req.user.role === 'admin' || req.user.role === 'superadmin' || req.user.role === 'hopital') {
     next();
   } else {
     return res.status(403).json({ message: "Accès refusé" });

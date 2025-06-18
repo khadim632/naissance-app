@@ -9,49 +9,51 @@ exports.creerPreDeclarationNaissance = async (req, res) => {
     const data = req.body;
     const user = req.user;
 
-    const mairie = await User.findOne({ nom: data.nomMairie, role: 'mairie' });
-
-    if (!mairie) {
-      return res.status(400).json({ message: 'Mairie non trouvée avec ce nom' });
+    // Vérifier que l'utilisateur connecté est un hôpital
+    if (user.role !== 'hopital') {
+      return res.status(403).json({ message: 'Accès refusé : seuls les hôpitaux peuvent créer des déclarations' });
     }
 
-    // Création de la déclaration
+    // Vérifier la mairie destinataire
+    const mairie = await User.findById(data.mairieDestinataire);
+    if (!mairie || mairie.role !== 'mairie') {
+      return res.status(400).json({ message: 'Mairie non trouvée ou invalide' });
+    }
+
+    // Créer la déclaration
     const declaration = new PreDeclarationNaissance({
-        nomBebe: data.nomBebe,
-        prenomBebe: data.prenomBebe,
-        sexe: data.sexe, // 🆕 Sexe du bébé
-        dateNaissance: data.dateNaissance,
-        lieuNaissance: data.lieuNaissance,
-        heureNaissance: data.heureNaissance,
-        pere: data.pere,
-        mere: data.mere,
-        mairieDestinataire: mairie._id,
-  
-        // Infos sur l’hôpital
-        createdBy: user._id,
-        hopitalNom: user.nom,
-        hopitalEmail: user.email
-      });
-  
+      nomBebe: data.nomBebe,
+      prenomBebe: data.prenomBebe,
+      sexe: data.sexe,
+      dateNaissance: data.dateNaissance,
+      lieuNaissance: data.lieuNaissance,
+      heureNaissance: data.heureNaissance,
+      pere: data.pere,
+      mere: data.mere,
+      mairieDestinataire: mairie._id,
+      createdBy: user._id,
+      hopitalNom: user.nom || 'Hôpital sans nom',
+      hopitalEmail: user.email,
+    });
 
     await declaration.save();
 
-    // envoi de mail
+    // Envoi de l'email aux parents
     const parentEmail = data.pere.email || data.mere.email;
     if (parentEmail) {
       await sendEmail({
         to: parentEmail,
         subject: 'Pré-déclaration de naissance enregistrée',
-        text: `ID du bébé :la predeclaration de  ${data.prenomBebe} ${data.nomBebe} née le ${data.dateNaissance} a pour ${declaration._id}\nMairie : ${mairie.nom || mairie.email}`
+        text: `Bonjour,\n\nLa pré-déclaration de naissance de ${data.prenomBebe} ${data.nomBebe}, née le ${data.dateNaissance}, a été enregistrée avec succès.\nID de la déclaration : ${declaration._id}\nMairie destinataire : ${mairie.nom || mairie.email}\n\nCordialement,\nL'équipe`,
       });
     }
 
     res.status(201).json(declaration);
   } catch (err) {
+    console.error('Erreur lors de la création de la déclaration:', err);
     res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 };
-
 // Décès
 exports.creerPreDeclarationDeces = async (req, res) => {
   try {
@@ -94,8 +96,6 @@ exports.getMesPreDeclarationsNaissance = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 };
-
-
 
 // Afficher toutes les pré-déclarations (naissance + décès) de l'hôpital connecté
 exports.getMesPreDeclarations = async (req, res) => {

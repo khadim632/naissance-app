@@ -32,62 +32,62 @@ export enum DeclarationStatus {
   refusée = 'refusée'
 }
 
-// Birth declaration types
+// types.ts
+
+// Parent type (utilisé pour père et mère)
 export interface Parent {
-  firstName: string;
-  lastName: string;
-  idNumber: string;
-  phoneNumber: string;
-  address: string;
+  nom: string; // lastName
+  prenom: string; // firstName
+  telephone: string; // phoneNumber
   email?: string;
+  carteIdentite: string; // idNumber
 }
 
+// Birth declaration type (aligned with PreDeclarationNaissance)
 export interface BirthDeclaration {
   _id: string;
-  childFirstName: string;
-  childLastName: string;
-  birthDate: string;
-  birthTime: string;
-  birthPlace: string;
-  gender: 'male' | 'female';
-  father: Parent;
-  mother: Parent;
-  declarationDate: string;
-  status: DeclarationStatus;
-  hospitalId: string;
-  hospitalName: string;
-  municipalityId: string;
-  municipalityName: string;
-  comments?: string;
-  validationDate?: string;
+  nomBebe: string; // childLastName
+  prenomBebe: string; // childFirstName
+  dateNaissance: string; // birthDate
+  heureNaissance: string; // birthTime
+  lieuNaissance: string; // birthPlace
+  sexe: 'masculin' | 'féminin'; // gender
+  pere: Parent; // father
+  mere: Parent; // mother
+  mairieDestinataire: {
+    _id: string;
+    nom: string;
+    email: string;
+  }; // municipality
+  statutValidation: DeclarationStatus; // status
+  commentaireValidation?: string; // comments
+  dateValidation?: string; // validationDate
+  hopitalNom: string; // hospitalName
+  hopitalEmail: string; // hospitalEmail
+  createdBy: {
+    _id: string;
+    nom: string;
+    email: string;
+    role: UserRole;
+  }; // hospital user
   createdAt: string;
   updatedAt: string;
 }
 
-// Death declaration types
-export interface Deceased {
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  idNumber: string;
-  address: string;
-}
-
+// Death declaration type (aligned with PreDeclarationDeces)
 export interface DeathDeclaration {
   _id: string;
-  deceased: Deceased;
-  deathDate: string;
-  deathTime: string;
-  deathPlace: string;
-  deathCause: string;
-  declarationDate: string;
-  status: DeclarationStatus;
-  hospitalId: string;
-  hospitalName: string;
-  municipalityId: string;
-  municipalityName: string;
-  comments?: string;
-  validationDate?: string;
+  pere?: Parent; // father (optional in schema)
+  mere?: Parent; // mother (optional in schema)
+  descriptionMort: string; // deathCause
+  hopitalNom: string; // hospitalName
+  hopitalEmail: string; // hospitalEmail
+  createdBy: {
+    _id: string;
+    nom: string;
+    email: string;
+    role: UserRole;
+  }; // hospital user
   createdAt: string;
   updatedAt: string;
 }

@@ -56,21 +56,29 @@ exports.login = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     const currentUser = req.user;
-    let users;
+    const { role } = req.query; // Récupérer le paramètre role
+    let query = {};
 
     if (currentUser.role === 'superadmin') {
       // Le superadmin voit tous les utilisateurs
-      users = await User.find().select('-motDePasse -refreshToken -resetToken -resetTokenExpire');
+      query = role ? { role } : {};
     } else if (currentUser.role === 'admin') {
-      // L'admin ne voit que les hôpitaux et mairies
-      users = await User.find({ 
-        role: { $in: ['hopital', 'mairie'] } 
-      }).select('-motDePasse -refreshToken -resetToken -resetTokenExpire');
+      // L'admin voit les hôpitaux et mairies
+      query = role
+        ? { role, role: { $in: ['hopital', 'mairie'] } }
+        : { role: { $in: ['hopital', 'mairie'] } };
+    } else if (currentUser.role === 'hopital') {
+      // Les hôpitaux peuvent voir uniquement les mairies
+      if (role !== 'mairie') {
+        return res.status(403).json({ message: "Accès refusé : vous ne pouvez voir que les mairies" });
+      }
+      query = { role: 'mairie' };
     } else {
       return res.status(403).json({ message: "Accès refusé" });
     }
 
-    res.json(users);
+    const users = await User.find(query).select('nom email role');
+    res.json({ data: users }); // Retourner les utilisateurs dans un objet avec la clé "data"
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

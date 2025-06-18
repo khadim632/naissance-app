@@ -23,6 +23,11 @@ interface ApiErrorResponse {
   message?: string;
 }
 
+// Interface pour la réponse du backend
+interface GetUsersResponse {
+  data: UserResponse[];
+}
+
 const userService = {
   async getAllUsers(): Promise<UserResponse[]> {
     try {
@@ -31,18 +36,19 @@ const userService = {
         throw new Error('Token manquant');
       }
 
-      const response = await axios.get(API_URL, {
+      const response = await axios.get<GetUsersResponse>(API_URL, {
         headers: { 
           Authorization: `Bearer ${token}` 
         }
       });
       
       // Vérifier si la réponse contient des données
-      if (!response.data) {
+      if (!response.data || !response.data.data) {
         throw new Error('Aucune donnée reçue');
       }
 
-      return response.data;
+      // Retourner le tableau d'utilisateurs qui est dans response.data.data
+      return response.data.data;
     } catch (error) {
       const axiosError = error as AxiosError<ApiErrorResponse>;
       // Gestion spécifique des erreurs d'autorisation

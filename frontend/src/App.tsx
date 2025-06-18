@@ -1,3 +1,4 @@
+// src/App.tsx
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -9,6 +10,8 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import BirthsList from './pages/births/BirthsList';
 import BirthForm from './pages/births/BirthForm';
+import DeathForm from './pages/deaths/DeathForm'; // Ajouter l'import
+import DeathsList from './pages/deaths/DeathsList'; // Ajouter l'import
 import ValidationsList from './pages/validations/ValidationsList';
 import RequireRole from './components/auth/RequireRole';
 import UsersList from './pages/UsersList';
@@ -25,7 +28,6 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-// Composant pour rediriger automatiquement selon le rôle SEULEMENT pour la route racine /app
 const RoleBasedRedirect: React.FC = () => {
   const { authState, getRedirectPath } = useAuth();
   
@@ -54,13 +56,9 @@ function App() {
             </RequireAuth>
           }
         >
-          {/* Redirection automatique basée sur le rôle SEULEMENT pour /app */}
           <Route index element={<RoleBasedRedirect />} />
-          
-          {/* Route dashboard accessible à tous les utilisateurs connectés */}
           <Route path="dashboard" element={<Dashboard />} /> 
           
-          {/* Route statistiques accessible à tous les utilisateurs connectés */}
           <Route 
             path="statistics" 
             element={
@@ -70,7 +68,6 @@ function App() {
             } 
           />
           
-          {/* 🏥 Routes réservées aux hôpitaux */}
           <Route 
             path="births" 
             element={
@@ -88,7 +85,6 @@ function App() {
             } 
           />
           
-          {/* 🏛️ Routes réservées aux mairies */}
           <Route 
             path="validations" 
             element={
@@ -114,12 +110,11 @@ function App() {
             } 
           />    
           
-          {/* ⚰️ Routes pour les décès (à implémenter) */}   
           <Route 
             path="deaths" 
             element={
               <RequireRole allowedRoles={['hopital']}>
-                <div>Death Declarations List (To be implemented)</div>
+                <DeathsList />
               </RequireRole>
             } 
           />
@@ -127,12 +122,11 @@ function App() {
             path="deaths/new" 
             element={
               <RequireRole allowedRoles={['hopital']}>
-                <div>New Death Declaration Form (To be implemented)</div>
+                <DeathForm /> {/* Remplacer le placeholder */}
               </RequireRole>
             } 
           />
           
-          {/* ⚙️ Routes admin/superadmin */}
           <Route 
             path="users" 
             element={
@@ -143,7 +137,6 @@ function App() {
           />
         </Route>
         
-        {/* 🔄 Redirection par défaut */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
